@@ -1,0 +1,175 @@
+/* Basic reset */
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; font-family:'Poppins', sans-serif; }
+
+/* ---------- Shared buttons ---------- */
+a, button { font-family: inherit; cursor: pointer; }
+
+/* ---------- Home page ---------- */
+.home-page, body.upload-page, body.result-page {
+  background: linear-gradient(135deg, #5E2CA8, #A370F5);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Wave canvas */
+#waveCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0; /* behind everything */
+  opacity: 0.35; /* slightly darker wave */
+}
+
+/* ---------- Home page card ---------- */
+.home-card {
+  position: relative;
+  z-index: 2;
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(8px);
+  padding: 48px 56px;
+  border-radius: 18px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  text-align: center;
+  max-width: 720px;
+  width: 90%;
+}
+
+.home-title {
+  color: #fff;
+  font-size: 2.6rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.home-subtitle {
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 28px;
+  font-size: 1.05rem;
+}
+
+/* Primary button */
+.btn-primary {
+  display: inline-block;
+  padding: 14px 36px;
+  border-radius: 999px;
+  background: #F2C649;
+  color: #5E2CA8;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform .18s ease, box-shadow .18s ease;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.28);
+  position: relative;
+  z-index: 2;
+}
+
+.btn-primary:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 36px rgba(0,0,0,0.36);
+}
+
+/* ---------- Upload & Result pages ---------- */
+body.upload-page, body.result-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.main-container {
+  z-index: 2; /* above canvas */
+  width: 100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 40px 20px;
+}
+
+.uploader-card, .result-card {
+  position: relative;
+  z-index: 2;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
+  padding: 36px 48px;
+  border-radius: 16px;
+  color: white;
+  max-width: 520px;
+  width: 92%;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+
+.title-small {
+  font-size: 1.9rem;
+  color: #F2C649;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.subtitle {
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 22px;
+}
+
+/* File upload button */
+.custom-file-upload {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  background: #F2C649;
+  color: #5E2CA8;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.28);
+  transition: transform .18s ease;
+  position: relative;
+  z-index: 3; /* above wave canvas */
+}
+
+.custom-file-upload:hover { transform: translateY(-3px); }
+
+/* Hidden input connected to label */
+.hidden-file-input { display: none; }
+
+/* Secondary buttons */
+.btn.btn-secondary {
+  display:inline-block;
+  padding: 10px 22px;
+  border-radius: 999px;
+  background: #5E2CA8;
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  margin-top: 16px;
+  text-decoration: none;
+  position: relative;
+  z-index: 2;
+}
+
+.btn.btn-secondary:hover { background: #6D3BCF; }
+
+/* Result */
+.emotion-text {
+  font-size: 1.8rem;
+  color: #F2C649;
+  font-weight: 800;
+  margin: 14px 0;
+}
+
+/* small links */
+.link-secondary { color:#F2C649; text-decoration:none; font-weight:600; }
+.link-secondary:hover { text-decoration:underline; }
+
+/* animation */
+@keyframes fadeInUp { 
+  from { opacity:0; transform: translateY(18px);} 
+  to { opacity:1; transform: translateY(0);} 
+}

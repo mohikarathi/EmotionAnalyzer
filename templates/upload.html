@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Upload Audio{% endblock %}
+{% block body_class %}upload-page{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <canvas id="waveCanvas"></canvas>
+  <div class="main-container">
+    <div class="uploader-card">
+      <h2 class="title-small">Upload Your Audio</h2>
+      <p class="subtitle">Select an audio file to analyze the emotion it conveys.</p>
+      <form action="{{ url_for('predict') }}" method="POST" enctype="multipart/form-data">
+        <!-- hidden input stays hidden -->
+        <input id="audioInput" type="file" name="audio" accept="audio/*" class="hidden-file-input" required>
+        <!-- label triggers the file input -->
+        <label class="custom-file-upload" for="audioInput">
+          🎵 Choose Audio
+        </label>
+        <button type="submit" class="btn btn-secondary">Analyze Emotion</button>
+      </form>
+      <div class="link-back">
+        <a href="{{ url_for('home') }}" class="link-secondary">← Back to Home</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="{{ url_for('static', filename='js/wave.js') }}"></script>
+{% endblock %}
+  

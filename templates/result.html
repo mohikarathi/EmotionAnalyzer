@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Prediction Result{% endblock %}
+{% block body_class %}result-page{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <canvas id="waveCanvas"></canvas>
+  <div class="main-container">
+    <div class="result-card">
+      <h2 class="title-small">Emotion Prediction Result</h2>
+      <p class="subtitle">The emotion detected in your audio is:</p>
+      <p class="emotion-text">{{ emotion }}</p>
+      <div class="actions">
+        <a href="{{ url_for('upload') }}" class="btn btn-secondary">Try Another</a>
+        <a href="{{ url_for('home') }}" class="link-secondary">Back Home</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/wave.js') }}"></script>
+{% endblock %}

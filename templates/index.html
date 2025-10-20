@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Emotion Audio Predictor - Home{% endblock %}
+{% block body_class %}home-page{% endblock %}
+
+{% block content %}
+<div class="home-page-outer">
+  <canvas id="waveCanvas"></canvas>
+
+  <div class="home-card">
+    <h1 class="home-title">🎧 Emotion Audio Predictor</h1>
+    <p class="home-subtitle">Upload or record your voice — we'll tell you the emotion.</p>
+
+    <!-- Correct endpoint name: 'upload' -->
+    <a href="{{ url_for('upload') }}" class="btn-primary">Get Started</a>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/wave.js') }}"></script>
+{% endblock %}
