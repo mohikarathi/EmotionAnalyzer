@@ -1,19 +1,115 @@
 {% extends "base.html" %}
-{% block title %}Emotion Audio Predictor - Home{% endblock %}
-{% block body_class %}home-page{% endblock %}
+
+{% block title %}EmotionAnalyzer — Acoustic Emotion Analysis{% endblock %}
 
 {% block content %}
-<div class="home-page-outer">
-  <canvas id="waveCanvas"></canvas>
-
-  <div class="home-card">
-    <h1 class="home-title">🎧 Emotion Audio Predictor</h1>
-    <p class="home-subtitle">Upload or record your voice — we'll tell you the emotion.</p>
-
-    <!-- Correct endpoint name: 'upload' -->
-    <a href="{{ url_for('upload') }}" class="btn-primary">Get Started</a>
+<section class="hero-section">
+  <div class="hero-content">
+    <div class="badge-tag">Acoustic Signal Processing & Deep Learning</div>
+    <h1 class="hero-headline">Explainable Speech Emotion Recognition</h1>
+    <p class="hero-description">
+      Upload a voice recording or record from your microphone to explore what acoustic emotion patterns the system detects across vocal prosody, pitch variance, and spectral distributions.
+    </p>
   </div>
-</div>
+</section>
 
-<script src="{{ url_for('static', filename='js/wave.js') }}"></script>
+<section class="analyzer-section">
+  <div class="analyzer-card">
+    <!-- Input Mode Switcher -->
+    <div class="mode-tabs">
+      <button type="button" class="tab-btn active" id="tabUploadBtn" onclick="switchMode('upload')">
+        Upload Audio File
+      </button>
+      <button type="button" class="tab-btn" id="tabRecordBtn" onclick="switchMode('record')">
+        Record from Microphone
+      </button>
+    </div>
+
+    <!-- Upload Panel -->
+    <div class="panel-content" id="uploadPanel">
+      <form id="uploadForm" action="{{ url_for('predict') }}" method="POST" enctype="multipart/form-data">
+        <div class="dropzone" id="dropzone" onclick="document.getElementById('audioFileInput').click();">
+          <input type="file" id="audioFileInput" name="audio" accept=".wav,.mp3,.ogg,.flac,.m4a,.webm" style="display: none;" onchange="handleFileSelected(this.files)">
+          <div class="dropzone-inner">
+            <svg class="upload-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <p class="dropzone-title">Click to select or drag and drop an audio file</p>
+            <p class="dropzone-hint">WAV, MP3, FLAC, OGG, M4A up to 16 MB</p>
+          </div>
+        </div>
+
+        <div class="file-preview-bar" id="filePreviewBar" style="display: none;">
+          <div class="file-info">
+            <span class="file-name" id="fileNameDisplay">sample.wav</span>
+            <span class="file-size" id="fileSizeDisplay">-- KB</span>
+          </div>
+          <audio id="audioPreview" controls style="width: 100%; margin-top: 12px;"></audio>
+        </div>
+
+        <div class="form-controls">
+          <div class="select-group">
+            <label for="modelSelect" class="input-label">Inference Model:</label>
+            <select name="model" id="modelSelect" class="custom-select">
+              <option value="hybrid" selected>Hybrid SER Model (BiLSTM + Attention)</option>
+              <option value="cnn">Mel-Spectrogram 2D CNN</option>
+              <option value="random_forest">Random Forest Baseline</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-primary" id="analyzeBtn" disabled>
+            Analyze Acoustic Emotion
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Microphone Record Panel -->
+    <div class="panel-content" id="recordPanel" style="display: none;">
+      <div class="recorder-box">
+        <div class="record-visualizer">
+          <div class="record-pulse" id="recordPulse"></div>
+          <span class="record-timer" id="recordTimer">00:00</span>
+        </div>
+        <p class="recorder-instruction" id="recorderInstruction">
+          Click Record to capture speech. Speak clearly for 2 to 4 seconds.
+        </p>
+
+        <div class="recorder-actions">
+          <button type="button" class="btn-record" id="startRecordBtn" onclick="startRecording()">
+            Start Recording
+          </button>
+          <button type="button" class="btn-stop" id="stopRecordBtn" onclick="stopRecording()" style="display: none;">
+            Stop Recording
+          </button>
+        </div>
+
+        <div class="file-preview-bar" id="recordedPreviewBar" style="display: none; margin-top: 24px;">
+          <p class="file-info" style="margin-bottom: 8px;">Recorded Clip Preview:</p>
+          <audio id="recordedAudioPreview" controls style="width: 100%;"></audio>
+          <button type="button" class="btn-primary" id="analyzeRecordBtn" style="margin-top: 16px; width: 100%;" onclick="submitRecordedAudio()">
+            Analyze Recorded Audio
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State Indicator -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+      <div class="spinner"></div>
+      <p class="loading-text">Extracting spectral features and running acoustic inference...</p>
+    </div>
+  </div>
+
+  <!-- Dynamic Results Container -->
+  <div class="results-container" id="resultsContainer" style="display: none;">
+    <!-- Rendered via JavaScript from JSON response -->
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/main.js') }}?v=2.2"></script>
+<script src="{{ url_for('static', filename='js/recorder.js') }}?v=2.2"></script>
 {% endblock %}

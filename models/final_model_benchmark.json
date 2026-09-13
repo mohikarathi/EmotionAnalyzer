@@ -1,0 +1,34 @@
+[
+  {
+    "model_name": "Random Forest (Handcrafted)",
+    "accuracy": 47.92,
+    "macro_f1": 0.4445,
+    "weighted_f1": 0.4519,
+    "latency_ms": 24.81,
+    "size_mb": 10.97
+  },
+  {
+    "model_name": "Logistic Regression",
+    "accuracy": 46.25,
+    "macro_f1": 0.4652,
+    "weighted_f1": 0.4652,
+    "latency_ms": 0.13,
+    "size_mb": 0.03
+  },
+  {
+    "model_name": "Mel-Spectrogram CNN",
+    "accuracy": 17.92,
+    "macro_f1": 0.078,
+    "weighted_f1": 0.0832,
+    "latency_ms": 45.99,
+    "size_mb": 1.24
+  },
+  {
+    "model_name": "Legacy Hybrid (BiLSTM+Attn)",
+    "accuracy": 100.0,
+    "macro_f1": 1.0,
+    "weighted_f1": 1.0,
+    "latency_ms": 47.39,
+    "size_mb": 3.76
+  }
+]

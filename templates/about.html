@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}How It Works — EmotionAnalyzer Architecture{% endblock %}
+
+{% block content %}
+<section class="about-hero">
+  <div class="about-hero-content">
+    <div class="badge-tag">Technical Architecture & Engineering</div>
+    <h1 class="hero-headline">How EmotionAnalyzer Works</h1>
+    <p class="hero-description">
+      An inside look at the digital signal processing, feature engineering, neural network architectures, and explainability mechanisms powering this speech emotion recognition system.
+    </p>
+  </div>
+</section>
+
+<section class="about-content-section">
+  <div class="about-card">
+    <article class="doc-block">
+      <h2>1. The Speech Emotion Recognition Pipeline</h2>
+      <p>
+        Speech Emotion Recognition (SER) aims to infer affective states directly from the acoustic properties of human vocalizations.
+        Rather than analyzing the linguistic semantics (what is said), the system analyzes acoustic prosody, spectral distribution, and harmonic characteristics (how it is said).
+      </p>
+      <div class="pipeline-diagram">
+        <div class="diagram-step">
+          <span class="step-num">01</span>
+          <strong>Raw Audio</strong>
+          <span>WAV / MP3 / OGG</span>
+        </div>
+        <div class="diagram-arrow">&rarr;</div>
+        <div class="diagram-step">
+          <span class="step-num">02</span>
+          <strong>Preprocessing</strong>
+          <span>Resample, Trim, Pad</span>
+        </div>
+        <div class="diagram-arrow">&rarr;</div>
+        <div class="diagram-step">
+          <span class="step-num">03</span>
+          <strong>Representation</strong>
+          <span>MFCCs &amp; Mel-Spectrogram</span>
+        </div>
+        <div class="diagram-arrow">&rarr;</div>
+        <div class="diagram-step">
+          <span class="step-num">04</span>
+          <strong>ML / CNN Inference</strong>
+          <span>Model Evaluation</span>
+        </div>
+        <div class="diagram-arrow">&rarr;</div>
+        <div class="diagram-step">
+          <span class="step-num">05</span>
+          <strong>Probabilities</strong>
+          <span>Softmax Distribution</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="doc-block">
+      <h2>2. Standardized Audio Preprocessing</h2>
+      <p>
+        Machine learning models require consistent numerical inputs. In the wild, user recordings vary in sample rate, volume, background silence, and duration. Our preprocessing pipeline executes identically during training and inference:
+      </p>
+      <ul class="doc-list">
+        <li><strong>Mono Conversion:</strong> Converts multichannel signals into single-channel audio, removing spatial microphone biases.</li>
+        <li><strong>Sampling-Rate Normalization:</strong> Resamples all inputs to 22,050 Hz via sinc interpolation, ensuring unified Fourier transform frequency bin boundaries.</li>
+        <li><strong>Peak Amplitude Normalization:</strong> Normalizes waveforms to the range [-1.0, 1.0] to decouple vocal loudness from recording distance or microphone gain.</li>
+        <li><strong>Silence Trimming:</strong> Removes non-phonated leading and trailing noise segments (below 30 dB relative to peak).</li>
+        <li><strong>Duration Standardization:</strong> Symmetrically pads short clips or center-crops long clips to an exact 3.0-second window (66,150 discrete samples).</li>
+      </ul>
+    </article>
+
+    <article class="doc-block">
+      <h2>3. Feature Representations: Handcrafted vs. Spectrograms</h2>
+      <div class="comparison-grid">
+        <div class="grid-card">
+          <h3>Handcrafted Acoustic Features</h3>
+          <p>Engineered signal-processing descriptors aggregated across time:</p>
+          <ul>
+            <li><strong>MFCCs (Mel-Frequency Cepstral Coefficients):</strong> 40 coefficients capturing the vocal tract resonance envelope.</li>
+            <li><strong>Deltas &amp; Delta-Deltas:</strong> First and second temporal derivatives capturing vocal velocity and acceleration.</li>
+            <li><strong>Spectral Descriptors:</strong> Centroid (brightness), Bandwidth (spectral spread), Rolloff (high-frequency decay), and Contrast.</li>
+            <li><strong>Energy &amp; Voicing:</strong> Root-Mean-Square (RMS) energy and Zero-Crossing Rate (ZCR).</li>
+            <li><strong>Chroma &amp; Tonnetz:</strong> Harmonic and pitch-class energy distributions.</li>
+          </ul>
+        </div>
+        <div class="grid-card">
+          <h3>Log-Mel Spectrogram (2D)</h3>
+          <p>Continuous time-frequency visual representations:</p>
+          <ul>
+            <li>128 Mel filter banks spanning human auditory perception (0 – 8,000 Hz).</li>
+            <li>Short-Time Fourier Transform (STFT) with 2,048-point FFT and 512 hop length (~23ms window).</li>
+            <li>Logarithmic decibel scaling to match nonlinear human loudness perception.</li>
+            <li>Enables 2D Convolutional Neural Networks to learn hierarchical spatial-temporal patterns across formants and harmonics.</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+    <article class="doc-block">
+      <h2>4. Speaker-Independent Evaluation (Zero Data Leakage)</h2>
+      <p>
+        A fundamental failure mode in speech emotion research is <em>speaker leakage</em>: when audio from the same individual appears in both the training and test splits.
+        Because vocal tract anatomy and fundamental pitch vary drastically across people, a model trained on randomly split data often memorizes speaker identities rather than learning emotional prosody.
+      </p>
+      <p>
+        EmotionAnalyzer enforces <strong>strict speaker-independent splitting</strong> on the RAVDESS dataset (24 professional actors):
+      </p>
+      <ul class="doc-list">
+        <li><strong>Train Set (75%):</strong> Actors 01 to 18 (9 male, 9 female — 1,080 samples).</li>
+        <li><strong>Validation Set (8.3%):</strong> Actors 19 and 20 (1 male, 1 female — 120 samples).</li>
+        <li><strong>Test Set (16.7%):</strong> Actors 21 to 24 (2 male, 2 female — 240 samples).</li>
+      </ul>
+      <p>
+        Every reported metric reflects generalization to completely unseen speakers.
+      </p>
+    </article>
+
+    <article class="doc-block">
+      <h2>5. Uncertainty Quantification &amp; Confidence Thresholds</h2>
+      <p>
+        Human speech emotions are naturally continuous, nuanced, and frequently blended. Softmax outputs from deep neural networks are often overconfident.
+        To handle acoustic ambiguity responsibly:
+      </p>
+      <ul class="doc-list">
+        <li>The system outputs full probability distributions across all 8 emotions, not single categorical assertions.</li>
+        <li>Predictions where the highest class probability falls below the confidence threshold (35%) are explicitly flagged as <strong>Low Confidence</strong>.</li>
+        <li>Outputs are described as <em>"Predicted acoustic emotion"</em> to clarify that the model detects vocal acoustic signatures rather than directly diagnosing inner psychological feelings.</li>
+      </ul>
+    </article>
+
+    <article class="doc-block">
+      <h2>6. System Limitations</h2>
+      <div class="limitations-box">
+        <p><strong>Acoustic Emotion vs. Subjective Internal State:</strong> A person may speak calmly while feeling anxious, or speak loudly without feeling angry. Acoustic classifiers observe vocal acoustics, not human thoughts.</p>
+        <p><strong>Dataset Demographics:</strong> Models trained on laboratory datasets like RAVDESS reflect North American English actors executing specific prompted phrases in clean studio conditions. Performance may vary on spontaneous speech, varied accents, or background ambient noise.</p>
+        <p><strong>Acoustic Overlap:</strong> High-arousal emotions (Anger, Happiness, Fear) share elevated pitch and energy, leading to natural perceptual ambiguity.</p>
+      </div>
+    </article>
+
+    <div class="about-actions">
+      <a href="{{ url_for('home') }}" class="btn-primary">&larr; Back to Audio Analyzer</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

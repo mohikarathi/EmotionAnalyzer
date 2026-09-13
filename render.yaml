@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: emotion-analyzer
+    env: docker
+    region: oregon
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: FLASK_DEBUG
+        value: "False"

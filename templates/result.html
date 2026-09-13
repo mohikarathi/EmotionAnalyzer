@@ -1,22 +1,136 @@
 {% extends "base.html" %}
-{% block title %}Prediction Result{% endblock %}
-{% block body_class %}result-page{% endblock %}
+
+{% block title %}EmotionAnalyzer — Acoustic Analysis Result{% endblock %}
 
 {% block content %}
-<div class="hero">
-  <canvas id="waveCanvas"></canvas>
-  <div class="main-container">
-    <div class="result-card">
-      <h2 class="title-small">Emotion Prediction Result</h2>
-      <p class="subtitle">The emotion detected in your audio is:</p>
-      <p class="emotion-text">{{ emotion }}</p>
-      <div class="actions">
-        <a href="{{ url_for('upload') }}" class="btn btn-secondary">Try Another</a>
-        <a href="{{ url_for('home') }}" class="link-secondary">Back Home</a>
+<section class="result-section">
+  <div class="result-card">
+    <div class="result-header">
+      <div>
+        <span class="badge-tag">Acoustic Inference Summary</span>
+        <h2 class="result-title">Acoustic Emotion Analysis</h2>
+        <p class="result-subtitle">File analyzed: <code class="code-badge">{{ filename }}</code></p>
+      </div>
+      <div class="model-badge">
+        <span>Model: {{ result.model_used|capitalize }}</span>
       </div>
     </div>
-  </div>
-</div>
 
-<script src="{{ url_for('static', filename='js/wave.js') }}"></script>
+    <!-- Prediction Highlight Card -->
+    <div class="prediction-banner {% if result.is_low_confidence %}low-confidence-banner{% endif %}">
+      <div class="prediction-info">
+        <span class="prediction-label">Predicted Acoustic Emotion</span>
+        <h1 class="prediction-emotion">{{ result.prediction|capitalize }}</h1>
+        <p class="prediction-disclaimer">
+          Inferred from acoustic spectral patterns and pitch dynamics.
+        </p>
+      </div>
+      <div class="confidence-box">
+        <span class="confidence-value">{{ (result.confidence * 100)|round(1) }}%</span>
+        <span class="confidence-label">Confidence</span>
+        {% if result.is_low_confidence %}
+          <span class="badge-warning">Low Confidence</span>
+        {% else %}
+          <span class="badge-success">High Confidence</span>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if result.is_low_confidence %}
+      <div class="alert alert-warning">
+        <strong>Acoustic Ambiguity Notice:</strong> The highest confidence score ({{ (result.confidence * 100)|round(1) }}%)
+        falls below the confidence threshold ({{ (result.confidence_threshold * 100)|round(0) }}%).
+        The audio may contain overlapping emotional cues, subdued pitch modulation, or background noise.
+      </div>
+    {% endif %}
+
+    <!-- Probability Distribution Section -->
+    <div class="section-block">
+      <h3 class="section-title">Acoustic Emotion Probability Distribution</h3>
+      <p class="section-desc">Full softmax probability distribution across all 8 standard emotion categories, ranked by likelihood.</p>
+      
+      <div class="probability-bars">
+        {% for item in result.probabilities %}
+          <div class="prob-row">
+            <span class="prob-name">{{ item.emotion|capitalize }}</span>
+            <div class="prob-track">
+              <div class="prob-fill {% if loop.first and not result.is_low_confidence %}prob-fill-top{% endif %}" style="width: {{ item.percentage }}%;"></div>
+            </div>
+            <span class="prob-percent">{{ item.percentage }}%</span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Spectral Visualization Section -->
+    <div class="section-block">
+      <h3 class="section-title">Time-Frequency Representation</h3>
+      <p class="section-desc">Log-scaled Mel-spectrogram computed across 128 filter banks (0 – 8 kHz) capturing energy distribution over time.</p>
+      <div class="spectrogram-container">
+        <img src="{{ result.melspectrogram }}" alt="Mel Spectrogram of uploaded audio" class="spectrogram-img">
+      </div>
+      <div class="spectrogram-guide">
+        <div class="guide-pill">
+          <div class="guide-pill-title">⏱️ Time Axis (Horizontal)</div>
+          <p class="guide-pill-desc">Duration (0 to 3.0s). Colored blocks show active speech; dark blue intervals show pauses.</p>
+        </div>
+        <div class="guide-pill">
+          <div class="guide-pill-title">📶 Frequency (Vertical, Mel Hz)</div>
+          <p class="guide-pill-desc">0 – 8 kHz. Lower bands (&lt;1 kHz) show vocal pitch and vowel formants; upper bands (&gt;2.5 kHz) show friction and tension.</p>
+        </div>
+        <div class="guide-pill">
+          <div class="guide-pill-title">🔥 Intensity (Decibels)</div>
+          <p class="guide-pill-desc">Bright yellow/orange marks peak vocal energy; dark purple/black indicates quiet baseline or silence.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acoustic Cues in the Spectrogram Section -->
+    {% if result.spectrogram_cues %}
+      <div class="section-block">
+        <h3 class="section-title">Acoustic Cues Influencing the Classification</h3>
+        <p class="section-desc">{{ result.spectrogram_cues.summary }}</p>
+        <div class="cues-grid">
+          {% for cue in result.spectrogram_cues.cues %}
+            <div class="cue-card">
+              <div class="cue-header">
+                <span class="cue-dimension">{{ cue.dimension }}</span>
+                <span class="cue-obs">{{ cue.observation }}</span>
+              </div>
+              <p class="cue-interpretation">{{ cue.interpretation }}</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Optional Explainability Section -->
+    {% if result.explanation %}
+      <div class="section-block">
+        <h3 class="section-title">Model Attribution & Explainability</h3>
+        <p class="section-desc">{{ result.explanation.description }}</p>
+        {% if result.explanation.type == 'feature_importance' %}
+          <div class="feature-importance-list">
+            {% for feat in result.explanation.top_features %}
+              <div class="feat-row">
+                <span class="feat-name">{{ feat.name }}</span>
+                <span class="feat-importance">{{ (feat.importance * 100)|round(2) }}%</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% elif result.explanation.type == 'gradcam' %}
+          <div class="spectrogram-container">
+            <img src="{{ result.explanation.heatmap_b64 }}" alt="Grad-CAM Saliency Heatmap" class="spectrogram-img">
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="result-actions">
+      <a href="{{ url_for('home') }}" class="btn-primary">Analyze Another Recording</a>
+      <a href="{{ url_for('about') }}" class="btn-secondary">Read Model Architecture</a>
+    </div>
+  </div>
+</section>
 {% endblock %}

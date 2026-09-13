@@ -1,0 +1,26 @@
+[
+  {
+    "experiment": "Experiment 1: MFCC Only",
+    "features": "40 MFCCs + Deltas + Delta-Deltas (mean & std)",
+    "dimension": 240,
+    "accuracy": 37.92,
+    "macro_f1": 0.363,
+    "weighted_f1": 0.369
+  },
+  {
+    "experiment": "Experiment 2: MFCC + Spectral",
+    "features": "MFCCs + ZCR + RMS + Centroid + Bandwidth + Rolloff + Contrast",
+    "dimension": 264,
+    "accuracy": 45.0,
+    "macro_f1": 0.4272,
+    "weighted_f1": 0.4383
+  },
+  {
+    "experiment": "Experiment 3: Full Feature Set",
+    "features": "Full Acoustic Set (+ Chroma Pitch Classes + Tonnetz Tonal Centroids)",
+    "dimension": 300,
+    "accuracy": 47.92,
+    "macro_f1": 0.4445,
+    "weighted_f1": 0.4519
+  }
+]

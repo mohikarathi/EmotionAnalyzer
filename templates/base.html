@@ -2,12 +2,59 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>{% block title %}Emotion Audio Predictor{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}EmotionAnalyzer — Explainable Speech Emotion Recognition{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.2">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
-<body class="{% block body_class %}{% endblock %}">
-  {% block content %}{% endblock %}
+<body>
+  <!-- Global Navigation Header -->
+  <header class="site-header">
+    <div class="nav-container">
+      <a href="{{ url_for('home') }}" class="brand-logo">
+        <span class="brand-accent">Emotion</span>Analyzer
+      </a>
+      <nav class="nav-links">
+        <a href="{{ url_for('home') }}" class="nav-link {% if request.endpoint == 'home' %}active{% endif %}">Analyzer</a>
+        <a href="{{ url_for('about') }}" class="nav-link {% if request.endpoint == 'about' %}active{% endif %}">How It Works</a>
+        <a href="https://github.com/mohikarathi/EmotionAnalyzer" target="_blank" rel="noopener noreferrer" class="nav-link nav-github">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Flash Messages Banner -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container">
+        {% for category, message in messages %}
+          <div class="flash-alert flash-{{ category }}">
+            <span>{{ message }}</span>
+            <button class="flash-close" onclick="this.parentElement.remove();">&times;</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Main Content Block -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <p class="footer-text">
+        EmotionAnalyzer — Research prototype for Explainable Speech Emotion Recognition.
+      </p>
+      <p class="footer-subtext">
+        Predictions infer acoustic vocal patterns (pitch, prosody, spectral distribution) rather than subjective internal psychological states.
+      </p>
+    </div>
+  </footer>
+
+  {% block scripts %}{% endblock %}
 </body>
 </html>

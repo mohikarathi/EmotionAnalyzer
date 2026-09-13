@@ -4,4 +4,6 @@ __pycache__/
 *.pyd
 .env
 uploads/
+data/cache/
+.pytest_cache/
 .DS_Store
