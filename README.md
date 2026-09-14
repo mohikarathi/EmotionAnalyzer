@@ -1,15 +1,20 @@
 # EmotionAnalyzer — An Explainable Speech Emotion Recognition System
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue.svg)](https://www.python.org/)
+[![Streamlit App](https://img.shields.io/badge/Streamlit-Live%20Demo-FF4B4B.svg)](https://emotionanalyser.streamlit.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Pytest Suite](https://img.shields.io/badge/tests-19%20passed-brightgreen.svg)](tests/)
-[![Framework](https://img.shields.io/badge/framework-Flask%20%7C%20Scikit--Learn%20%7C%20TensorFlow-orange.svg)](app.py)
+[![Pytest Suite](https://img.shields.io/badge/tests-20%20passed-brightgreen.svg)](tests/)
+[![Framework](https://img.shields.io/badge/framework-Streamlit%20%7C%20Flask%20%7C%20TensorFlow-orange.svg)](streamlit_app.py)
 
-**EmotionAnalyzer** is an explainable, end-to-end Speech Emotion Recognition (SER) system that classifies vocal affective states from acoustic wave patterns. The system combines digital signal processing (DSP), statistical feature engineering, classical machine learning baselines, and 2D Mel-spectrogram Convolutional Neural Networks (CNNs), wrapped in a security-hardened Flask web product with real-time browser microphone capture and explainability mechanisms (Random Forest feature importance and CNN Grad-CAM saliency).
+**Live Web Application:** [https://emotionanalyser.streamlit.app/](https://emotionanalyser.streamlit.app/)
+
+**EmotionAnalyzer** is an explainable, end-to-end Speech Emotion Recognition (SER) system that classifies vocal affective states from acoustic wave patterns. The system combines digital signal processing (DSP), statistical feature engineering, classical machine learning baselines, and 2D Mel-spectrogram Convolutional Neural Networks (CNNs), wrapped in production web interfaces (Streamlit Community Cloud and security-hardened Flask) with real-time browser microphone capture and explainability mechanisms (Random Forest feature importance and CNN Grad-CAM saliency).
 
 ---
 
 ## Table of Contents
+
+- [Live Demo](#live-demo)
 
 - [Problem Statement](#problem-statement)
 - [System Architecture](#system-architecture)
@@ -29,6 +34,21 @@
 - [Automated Testing](#automated-testing)
 - [Limitations & Ethical Boundaries](#limitations--ethical-boundaries)
 - [Future Work](#future-work)
+
+---
+
+## Live Demo
+
+The interactive speech emotion recognition application is deployed on Streamlit Community Cloud:
+
+**Live URL:** [https://emotionanalyser.streamlit.app/](https://emotionanalyser.streamlit.app/)
+
+Features available in the live demo:
+- **Audio Input Options:** Direct browser microphone recording and multi-format audio file uploads (`.wav`, `.mp3`, `.ogg`, `.flac`, `.m4a`, `.webm`).
+- **Multi-Model Inference:** Real-time evaluation using the Hybrid SER model, 2D Mel-Spectrogram CNN, or Random Forest.
+- **Uncertainty Quantification:** Dynamic confidence threshold slider that flags ambiguous vocal expressions.
+- **Time-Frequency Visualization:** Log-Mel spectrogram generation with acoustic cue observations and domain interpretations.
+- **Explainability:** Model attribution via Gini feature importance and CNN Grad-CAM saliency heatmaps.
 
 ---
 
@@ -304,13 +324,18 @@ pip install -r requirements.txt
 ```
 
 ### 2. Start the Web Application
+
+**Option A: Streamlit Web Interface**
+```bash
+streamlit run streamlit_app.py
+```
+Navigate to: `http://localhost:8501`
+
+**Option B: Flask Web Product & REST API**
 ```bash
 python app.py
 ```
-Open your browser and navigate to:
-```
-http://localhost:10000
-```
+Navigate to: `http://localhost:10000`
 
 ---
 
