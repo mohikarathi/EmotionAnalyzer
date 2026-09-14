@@ -105,7 +105,7 @@ def extract_handcrafted_features(
     Returns:
         1D float32 array of deterministic length.
     """
-    if isinstance(audio_path_or_y, (str, Path)):
+    if isinstance(audio_path_or_y, (str, Path)) or hasattr(audio_path_or_y, "read"):
         y, sr = preprocess_audio(audio_path_or_y, target_sr=sr)
     else:
         y = audio_path_or_y
@@ -195,7 +195,7 @@ def extract_mel_spectrogram(
         2D float32 array of shape (n_mels, time_steps).
         For 3.0s audio at 22050Hz with hop_length=512, shape is (128, 130).
     """
-    if isinstance(audio_path_or_y, (str, Path)):
+    if isinstance(audio_path_or_y, (str, Path)) or hasattr(audio_path_or_y, "read"):
         y, sr = preprocess_audio(audio_path_or_y, target_sr=sr)
     else:
         y = audio_path_or_y

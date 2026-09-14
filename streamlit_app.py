@@ -176,25 +176,25 @@ if audio_bytes is not None:
     if st.button("🚀 Analyze Speech Emotion", type="primary", use_container_width=True):
         with st.spinner("Processing audio and extracting acoustic features..."):
             try:
-                # 1. Load & preprocess audio in memory
-                buffer = io.BytesIO(audio_bytes)
-                y, sr = preprocess_audio(buffer)
-
-                # 2. Run model inference
-                pred_result = engine.predict(y, sr=sr, model_name=model_choice, threshold=threshold)
+                # 1. Run model inference directly on raw audio buffer so models receive natural, unpadded audio
+                raw_buffer = io.BytesIO(audio_bytes)
+                pred_result = engine.predict(raw_buffer, model_name=model_choice, threshold=threshold)
                 pred_emotion = pred_result["predicted_emotion"]
                 confidence = pred_result["confidence"]
                 is_low_conf = pred_result["is_low_confidence"]
                 probabilities = pred_result["probabilities"]
 
-                # 3. Visualization & acoustic cues
+                # 2. Preprocess audio strictly for Mel-spectrogram visualization & acoustic cues
+                viz_buffer = io.BytesIO(audio_bytes)
+                y, sr = preprocess_audio(viz_buffer)
                 melspec_b64 = generate_melspectrogram_base64(y, sr=sr)
                 spectrogram_cues = analyze_spectrogram_cues(y, sr=sr, predicted_emotion=pred_emotion)
 
-                # 4. Optional explainability
+                # 3. Model explainability
                 explanation = None
                 try:
-                    explanation = explain_prediction(y, model_name=model_choice)
+                    expl_buffer = io.BytesIO(audio_bytes)
+                    explanation = explain_prediction(expl_buffer, model_name=model_choice)
                 except Exception as expl_err:
                     st.warning(f"Note: Explainability skipped: {expl_err}")
 

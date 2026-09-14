@@ -134,22 +134,20 @@ def predict():
         # 5. Selected model (default to hybrid / best available)
         requested_model = request.form.get("model", "hybrid")
 
-        # 6. Load & preprocess audio ONCE in memory (avoids redundant disk I/O & resampling)
+        # 6. Perform inference directly on raw audio file to preserve natural acoustic features
+        prediction_result = engine.predict(temp_path, model_name=requested_model)
+
+        # 7. Preprocess audio strictly for Mel-spectrogram visualization & cues
         y, sr = preprocess_audio(temp_path)
-
-        # 7. Perform inference with preprocessed in-memory signal
-        prediction_result = engine.predict(y, sr=sr, model_name=requested_model)
-
-        # 8. Generate visualization data & acoustic cues directly from in-memory array
         waveform_points = compute_waveform_points(y, num_points=100)
         melspec_b64 = generate_melspectrogram_base64(y, sr=sr)
         spectrogram_cues = analyze_spectrogram_cues(y, sr=sr, predicted_emotion=prediction_result["predicted_emotion"])
 
-        # 9. Model explanation using in-memory array
+        # 8. Model explanation
         explanation_data = None
         try:
             from src.models.explainability import explain_prediction
-            explanation_data = explain_prediction(y, model_name=requested_model)
+            explanation_data = explain_prediction(temp_path, model_name=requested_model)
         except Exception as expl_err:
             logger.debug(f"Explainability not available or skipped: {expl_err}")
 

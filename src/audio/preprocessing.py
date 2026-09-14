@@ -54,6 +54,8 @@ def load_audio(
         RuntimeError: If librosa/soundfile cannot decode the file.
     """
     try:
+        if hasattr(file_path_or_buffer, "seek"):
+            file_path_or_buffer.seek(0)
         # librosa.load handles mono conversion and resampling via soxr/scipy
         y, sr = librosa.load(file_path_or_buffer, sr=target_sr, mono=mono)
     except Exception as exc:

@@ -67,3 +67,20 @@ def test_uncertainty_threshold_flagging(test_audio_file):
     # Artificially low threshold should NOT trigger low confidence flag
     res_low_thresh = engine.predict(test_audio_file, threshold=0.001)
     assert res_low_thresh["is_low_confidence"] is False
+
+
+def test_prediction_bytesio(test_audio_file):
+    """Verify inference works seamlessly with in-memory io.BytesIO audio buffers."""
+    import io
+    engine = get_inference_engine()
+
+    with open(test_audio_file, "rb") as f:
+        audio_bytes = f.read()
+
+    buf = io.BytesIO(audio_bytes)
+    result = engine.predict(buf, model_name="hybrid")
+
+    assert "predicted_emotion" in result
+    assert result["predicted_emotion"] in EMOTION_CLASSES
+    assert 0.0 <= result["confidence"] <= 1.0
+

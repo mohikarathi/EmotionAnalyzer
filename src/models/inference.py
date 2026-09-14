@@ -86,8 +86,10 @@ def extract_legacy_features(audio_path_or_data: Union[str, Path, np.ndarray], sr
     """
     import librosa
 
-    if isinstance(audio_path_or_data, (str, Path)):
-        y_audio, sr = librosa.load(str(audio_path_or_data), sr=sr)
+    if isinstance(audio_path_or_data, (str, Path)) or hasattr(audio_path_or_data, "read"):
+        if hasattr(audio_path_or_data, "seek"):
+            audio_path_or_data.seek(0)
+        y_audio, sr = librosa.load(audio_path_or_data, sr=sr)
     else:
         y_audio = audio_path_or_data
         if sr is None:
