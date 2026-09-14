@@ -5,7 +5,9 @@ Uses the modular 'src' inference engine, preprocessing pipeline, and explainabil
 """
 
 import io
+import os
 from pathlib import Path
+import tempfile
 from typing import Optional
 
 import numpy as np
@@ -90,14 +92,14 @@ st.markdown("""
 
 
 @st.cache_resource(show_spinner="Pre-warming ML models and feature extraction engine...")
-def load_cached_engine():
+def load_cached_engine(version: str = "v2.2"):
     """Load and warm up model weights once per server lifetime."""
     engine = get_inference_engine()
     engine.warmup()
     return engine
 
 
-engine = load_cached_engine()
+engine = load_cached_engine("v2.2")
 
 # ----------------- SIDEBAR -----------------
 with st.sidebar:
@@ -175,26 +177,32 @@ if audio_bytes is not None:
 
     if st.button("🚀 Analyze Speech Emotion", type="primary", use_container_width=True):
         with st.spinner("Processing audio and extracting acoustic features..."):
+            temp_path = None
             try:
-                # 1. Run model inference directly on raw audio buffer so models receive natural, unpadded audio
-                raw_buffer = io.BytesIO(audio_bytes)
-                pred_result = engine.predict(raw_buffer, model_name=model_choice, threshold=threshold)
+                # 1. Write audio bytes to temporary file with correct extension for robust format decoding
+                ext = Path(audio_source_name).suffix.lower()
+                if not ext:
+                    ext = ".wav"
+                with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
+                    tmp.write(audio_bytes)
+                    temp_path = tmp.name
+
+                # 2. Run model inference directly on raw audio file to preserve natural, unpadded audio
+                pred_result = engine.predict(temp_path, model_name=model_choice, threshold=threshold)
                 pred_emotion = pred_result["predicted_emotion"]
                 confidence = pred_result["confidence"]
                 is_low_conf = pred_result["is_low_confidence"]
                 probabilities = pred_result["probabilities"]
 
-                # 2. Preprocess audio strictly for Mel-spectrogram visualization & acoustic cues
-                viz_buffer = io.BytesIO(audio_bytes)
-                y, sr = preprocess_audio(viz_buffer)
+                # 3. Preprocess audio strictly for Mel-spectrogram visualization & acoustic cues
+                y, sr = preprocess_audio(temp_path)
                 melspec_b64 = generate_melspectrogram_base64(y, sr=sr)
                 spectrogram_cues = analyze_spectrogram_cues(y, sr=sr, predicted_emotion=pred_emotion)
 
-                # 3. Model explainability
+                # 4. Model explainability
                 explanation = None
                 try:
-                    expl_buffer = io.BytesIO(audio_bytes)
-                    explanation = explain_prediction(expl_buffer, model_name=model_choice)
+                    explanation = explain_prediction(temp_path, model_name=model_choice)
                 except Exception as expl_err:
                     st.warning(f"Note: Explainability skipped: {expl_err}")
 
@@ -296,5 +304,11 @@ if audio_bytes is not None:
 
             except Exception as exc:
                 st.error(f"Error analyzing audio: {exc}")
+            finally:
+                if temp_path and os.path.exists(temp_path):
+                    try:
+                        os.unlink(temp_path)
+                    except Exception:
+                        pass
 else:
     st.info("👆 Record your voice or upload an audio file above to begin analysis.")

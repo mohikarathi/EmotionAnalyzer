@@ -86,14 +86,20 @@ def extract_legacy_features(audio_path_or_data: Union[str, Path, np.ndarray], sr
     """
     import librosa
 
+    if isinstance(audio_path_or_data, bytes):
+        import io
+        audio_path_or_data = io.BytesIO(audio_path_or_data)
+
     if isinstance(audio_path_or_data, (str, Path)) or hasattr(audio_path_or_data, "read"):
         if hasattr(audio_path_or_data, "seek"):
             audio_path_or_data.seek(0)
         y_audio, sr = librosa.load(audio_path_or_data, sr=sr)
-    else:
+    elif isinstance(audio_path_or_data, np.ndarray):
         y_audio = audio_path_or_data
         if sr is None:
             sr = 22050
+    else:
+        raise TypeError(f"Unsupported audio input type for legacy features: {type(audio_path_or_data)}")
 
     y_audio = librosa.util.normalize(y_audio.astype(np.float32))
 

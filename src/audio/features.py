@@ -105,10 +105,16 @@ def extract_handcrafted_features(
     Returns:
         1D float32 array of deterministic length.
     """
+    if isinstance(audio_path_or_y, bytes):
+        import io
+        audio_path_or_y = io.BytesIO(audio_path_or_y)
+
     if isinstance(audio_path_or_y, (str, Path)) or hasattr(audio_path_or_y, "read"):
         y, sr = preprocess_audio(audio_path_or_y, target_sr=sr)
-    else:
+    elif isinstance(audio_path_or_y, np.ndarray):
         y = audio_path_or_y
+    else:
+        raise TypeError(f"Unsupported audio input type for handcrafted features: {type(audio_path_or_y)}")
 
     features = []
 
@@ -195,10 +201,16 @@ def extract_mel_spectrogram(
         2D float32 array of shape (n_mels, time_steps).
         For 3.0s audio at 22050Hz with hop_length=512, shape is (128, 130).
     """
+    if isinstance(audio_path_or_y, bytes):
+        import io
+        audio_path_or_y = io.BytesIO(audio_path_or_y)
+
     if isinstance(audio_path_or_y, (str, Path)) or hasattr(audio_path_or_y, "read"):
         y, sr = preprocess_audio(audio_path_or_y, target_sr=sr)
-    else:
+    elif isinstance(audio_path_or_y, np.ndarray):
         y = audio_path_or_y
+    else:
+        raise TypeError(f"Unsupported audio input type for Mel spectrogram: {type(audio_path_or_y)}")
 
     mel_spec = librosa.feature.melspectrogram(
         y=y, sr=sr, n_fft=n_fft, hop_length=hop_length, n_mels=n_mels, fmax=8000
