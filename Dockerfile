@@ -35,5 +35,6 @@ EXPOSE 10000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:${PORT}/ || exit 1
 
-# Start via production Gunicorn WSGI server
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT} --workers 1 --threads 4 --timeout 120 --access-logfile - --error-logfile - app:app"]
+# Start via production Gunicorn WSGI server with preloaded in-memory models
+CMD ["sh", "-c", "gunicorn --preload --bind 0.0.0.0:${PORT} --workers 1 --threads 2 --timeout 120 --access-logfile - --error-logfile - app:app"]
+

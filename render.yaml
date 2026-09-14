@@ -10,3 +10,9 @@ services:
         value: 10000
       - key: FLASK_DEBUG
         value: "False"
+      - key: TF_NUM_INTRAOP_THREADS
+        value: "2"
+      - key: TF_NUM_INTEROP_THREADS
+        value: "1"
+      - key: OMP_NUM_THREADS
+        value: "2"

@@ -69,7 +69,7 @@ def generate_melspectrogram_base64(
     )
     melspec_db = librosa.power_to_db(melspec, ref=np.max)
 
-    fig, ax = plt.subplots(figsize=(6, 2.5), dpi=120)
+    fig, ax = plt.subplots(figsize=(6, 2.3), dpi=90)
     fig.patch.set_facecolor("#0F172A")  # Dark slate background
     ax.set_facecolor("#0F172A")
 
@@ -134,17 +134,19 @@ def analyze_spectrogram_cues(
     total_energy = float(np.sum(stft)) + 1e-8
     high_freq_ratio = high_energy / total_energy
 
-    # 2. Spectral Centroid (Vocal Brightness)
-    centroid = float(np.mean(librosa.feature.spectral_centroid(y=y, sr=sr, n_fft=N_FFT, hop_length=HOP_LENGTH)))
-    centroid_std = float(np.std(librosa.feature.spectral_centroid(y=y, sr=sr, n_fft=N_FFT, hop_length=HOP_LENGTH)))
+    # 2. Spectral Centroid (Vocal Brightness) - reuse stft matrix
+    sc = librosa.feature.spectral_centroid(S=stft, sr=sr)[0]
+    centroid = float(np.mean(sc))
+    centroid_std = float(np.std(sc))
 
-    # 3. RMS Energy Dynamics (Vocal Effort)
-    rms = librosa.feature.rms(y=y, hop_length=HOP_LENGTH)[0]
+    # 3. RMS Energy Dynamics (Vocal Effort) - reuse stft matrix
+    rms = librosa.feature.rms(S=stft)[0]
     rms_mean = float(np.mean(rms))
     rms_std = float(np.std(rms))
 
     # 4. Zero Crossing Rate (Fricative / breath ratio)
-    zcr_mean = float(np.mean(librosa.feature.zero_crossing_rate(y=y, hop_length=HOP_LENGTH)))
+    zcr = librosa.feature.zero_crossing_rate(y=y, hop_length=HOP_LENGTH)[0]
+    zcr_mean = float(np.mean(zcr))
 
     cues = []
 

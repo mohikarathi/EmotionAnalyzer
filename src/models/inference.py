@@ -99,9 +99,8 @@ def extract_legacy_features(audio_path_or_data: Union[str, Path, np.ndarray], sr
     mel = np.mean(librosa.power_to_db(librosa.feature.melspectrogram(y=y_audio, sr=sr, n_mels=128)).T, axis=0)
     spec_contrast = np.mean(librosa.feature.spectral_contrast(y=y_audio, sr=sr).T, axis=0)
     chroma = np.mean(librosa.feature.chroma_stft(y=y_audio, sr=sr).T, axis=0)
-    y_harmonic = librosa.effects.harmonic(y_audio)
-    tonnetz = np.mean(librosa.feature.tonnetz(y=y_harmonic, sr=sr).T, axis=0)
     y_harmonic, _ = librosa.effects.hpss(y_audio)
+    tonnetz = np.mean(librosa.feature.tonnetz(y=y_harmonic, sr=sr).T, axis=0)
     poly = np.array([np.mean(y_harmonic)], dtype=np.float32)
 
     feature_vector = np.hstack([mfcc, mel, spec_contrast, chroma, tonnetz, poly]).astype(np.float32)
@@ -167,26 +166,46 @@ class InferenceEngine:
             except Exception as e:
                 logger.debug(f"Random Forest model not loaded yet: {e}")
 
+        # Pre-warm JIT compilation and graph execution
+        self.warmup()
+
+    def warmup(self):
+        """Pre-warm execution graphs, Numba JIT compilation, and filter caches on startup."""
+        try:
+            logger.info("Running inference engine warmup pass...")
+            dummy_y = np.zeros(22050 // 2, dtype=np.float32)
+            if "hybrid" in self.models:
+                dummy_legacy = extract_legacy_features(dummy_y, sr=22050)
+                self.models["hybrid"].predict(np.expand_dims(dummy_legacy, axis=(0, -1)), verbose=0)
+            if "cnn" in self.models:
+                from src.audio.features import extract_mel_spectrogram
+                dummy_mel = extract_mel_spectrogram(dummy_y, sr=22050)
+                self.models["cnn"].predict(np.expand_dims(dummy_mel, axis=(0, -1)), verbose=0)
+            if "random_forest" in self.models:
+                from src.audio.features import extract_handcrafted_features
+                dummy_feats = extract_handcrafted_features(dummy_y, sr=22050)
+                self.models["random_forest"].predict_proba(np.expand_dims(dummy_feats, axis=0))
+            logger.info("Warmup complete. Latency-critical paths compiled.")
+        except Exception as e:
+            logger.debug(f"Inference engine warmup note: {e}")
+
     def predict(
         self,
-        audio_input: Union[str, Path, io.BytesIO],
+        audio_input: Union[str, Path, io.BytesIO, np.ndarray],
+        sr: Optional[int] = None,
         model_name: str = "hybrid",
         threshold: float = CONFIDENCE_THRESHOLD
     ) -> Dict[str, Any]:
-        """Perform probability-based speech emotion prediction on an audio file.
+        """Perform probability-based speech emotion prediction on an audio file or array.
 
         Args:
-            audio_input: Audio filepath or byte stream.
+            audio_input: Audio filepath, byte stream, or preprocessed 1D numpy array.
+            sr: Sampling rate (if preprocessed array passed).
             model_name: Name of model to query ('hybrid', 'cnn', 'random_forest').
             threshold: Confidence threshold for uncertainty quantification.
 
         Returns:
-            Dictionary containing:
-            - predicted_emotion: Name of predicted emotion class.
-            - confidence: Float confidence in [0.0, 1.0].
-            - is_low_confidence: Boolean indicating if confidence < threshold.
-            - probabilities: List of {emotion, score, percentage} sorted descending.
-            - model_used: Name of model that produced the prediction.
+            Dictionary containing prediction results, probabilities, and model metadata.
         """
         # Determine available model fallback
         if model_name not in self.models:
@@ -201,17 +220,17 @@ class InferenceEngine:
 
         # Extract appropriate representation
         if model_name in ("hybrid", "legacy"):
-            features = extract_legacy_features(audio_input)
+            features = extract_legacy_features(audio_input, sr=sr)
             tensor_input = np.expand_dims(features, axis=(0, -1))  # (1, 194, 1)
             raw_preds = model.predict(tensor_input, verbose=0)[0]
         elif model_name == "cnn":
             from src.audio.features import extract_mel_spectrogram
-            mel_spec = extract_mel_spectrogram(audio_input)
+            mel_spec = extract_mel_spectrogram(audio_input, sr=sr or 22050)
             tensor_input = np.expand_dims(mel_spec, axis=(0, -1))  # (1, 128, T, 1)
             raw_preds = model.predict(tensor_input, verbose=0)[0]
         elif model_name in ("random_forest", "classical"):
             from src.audio.features import extract_handcrafted_features
-            features = extract_handcrafted_features(audio_input)
+            features = extract_handcrafted_features(audio_input, sr=sr or 22050)
             raw_preds = model.predict_proba(np.expand_dims(features, axis=0))[0]
         else:
             raise ValueError(f"Unsupported model name: {model_name}")
