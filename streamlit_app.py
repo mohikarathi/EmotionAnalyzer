@@ -23,22 +23,21 @@ from src.config import CONFIDENCE_THRESHOLD, EMOTION_CLASSES, TARGET_SR
 from src.models.explainability import explain_prediction
 from src.models.inference import get_inference_engine
 
-# Emotion emojis and display colors
+# Emotion display colors
 EMOTION_META = {
-    "angry": {"emoji": "😠", "color": "#EF4444"},
-    "calm": {"emoji": "😌", "color": "#06B6D4"},
-    "disgust": {"emoji": "🤢", "color": "#10B981"},
-    "fearful": {"emoji": "😨", "color": "#8B5CF6"},
-    "happy": {"emoji": "😊", "color": "#F59E0B"},
-    "neutral": {"emoji": "😐", "color": "#6B7280"},
-    "sad": {"emoji": "😢", "color": "#3B82F6"},
-    "surprised": {"emoji": "😲", "color": "#EC4899"},
+    "angry": {"color": "#EF4444"},
+    "calm": {"color": "#06B6D4"},
+    "disgust": {"color": "#10B981"},
+    "fearful": {"color": "#8B5CF6"},
+    "happy": {"color": "#F59E0B"},
+    "neutral": {"color": "#6B7280"},
+    "sad": {"color": "#3B82F6"},
+    "surprised": {"color": "#EC4899"},
 }
 
 # Streamlit Page Config
 st.set_page_config(
     page_title="EmotionAnalyzer — Explainable SER",
-    page_icon="🎙️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -103,7 +102,7 @@ engine = load_cached_engine("v2.2")
 
 # ----------------- SIDEBAR -----------------
 with st.sidebar:
-    st.title("🎙️ EmotionAnalyzer")
+    st.title("EmotionAnalyzer")
     st.caption("Explainable Speech Emotion Recognition System")
 
     st.markdown("---")
@@ -149,7 +148,7 @@ st.markdown(
     "Features probability distributions, Log-Mel spectrogram visualization, and acoustic explainability."
 )
 
-tab_record, tab_upload = st.tabs(["🎙️ Microphone Record", "📁 Upload Audio File"])
+tab_record, tab_upload = st.tabs(["Microphone Record", "Upload Audio File"])
 
 audio_bytes: Optional[bytes] = None
 audio_source_name = "recording.wav"
@@ -175,7 +174,7 @@ with tab_upload:
 if audio_bytes is not None:
     st.audio(audio_bytes)
 
-    if st.button("🚀 Analyze Speech Emotion", type="primary", use_container_width=True):
+    if st.button("Analyze Speech Emotion", type="primary", use_container_width=True):
         with st.spinner("Processing audio and extracting acoustic features..."):
             temp_path = None
             try:
@@ -213,12 +212,12 @@ if audio_bytes is not None:
 
                 with col_left:
                     st.subheader("Inference Result")
-                    meta = EMOTION_META.get(pred_emotion, {"emoji": "🎭", "color": "#6366F1"})
+                    meta = EMOTION_META.get(pred_emotion, {"color": "#6366F1"})
 
                     st.markdown(f"""
                     <div style="background-color: #1E293B; border-left: 5px solid {meta['color']}; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                       <span style="font-size: 0.85rem; text-transform: uppercase; color: #94A3B8; letter-spacing: 1px;">Predicted Acoustic Emotion</span>
-                      <h1 style="margin: 6px 0; color: #FFFFFF; font-size: 2.2rem;">{meta['emoji']} {pred_emotion.capitalize()}</h1>
+                      <h1 style="margin: 6px 0; color: #FFFFFF; font-size: 2.2rem;">{pred_emotion.capitalize()}</h1>
                       <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
                         <span style="font-size: 1.1rem; font-weight: 700; color: {meta['color']};">{confidence*100:.1f}% Confidence</span>
                         <span style="background-color: {'#B45309' if is_low_conf else '#065F46'}; color: #FFFFFF; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">
@@ -253,15 +252,15 @@ if audio_bytes is not None:
                     st.markdown("""
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px;">
                       <div class="guide-pill">
-                        <div class="guide-pill-title">⏱️ Time (X-Axis)</div>
+                        <div class="guide-pill-title">Time (X-Axis)</div>
                         <p class="guide-pill-text">0 – 3.0s duration. Bright segments show active speech.</p>
                       </div>
                       <div class="guide-pill">
-                        <div class="guide-pill-title">📶 Frequency (Y-Axis)</div>
+                        <div class="guide-pill-title">Frequency (Y-Axis)</div>
                         <p class="guide-pill-text">0 – 8 kHz Mel scale. &lt;1 kHz = pitch, &gt;2.5 kHz = friction.</p>
                       </div>
                       <div class="guide-pill">
-                        <div class="guide-pill-title">🔥 Intensity (dB)</div>
+                        <div class="guide-pill-title">Intensity (dB)</div>
                         <p class="guide-pill-text">Yellow/orange = peak energy; dark purple = silence.</p>
                       </div>
                     </div>
@@ -282,7 +281,7 @@ if audio_bytes is not None:
                 # ----------------- EXPLAINABILITY -----------------
                 if explanation is not None:
                     st.markdown("---")
-                    st.subheader("🔍 Model Attribution & Explainability")
+                    st.subheader("Model Attribution & Explainability")
                     st.caption(explanation.get("description", "Acoustic feature attributions driving this prediction:"))
 
                     if explanation.get("type") == "feature_importance":
@@ -311,4 +310,4 @@ if audio_bytes is not None:
                     except Exception:
                         pass
 else:
-    st.info("👆 Record your voice or upload an audio file above to begin analysis.")
+    st.info("Record your voice or upload an audio file above to begin analysis.")

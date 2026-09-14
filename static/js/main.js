@@ -253,15 +253,15 @@ function renderResults(data) {
         </div>
         <div class="spectrogram-guide">
           <div class="guide-pill">
-            <div class="guide-pill-title">⏱️ Time Axis (Horizontal)</div>
+            <div class="guide-pill-title">Time Axis (Horizontal)</div>
             <p class="guide-pill-desc">Duration (0 to 3.0s). Colored blocks show active speech; dark blue intervals show pauses.</p>
           </div>
           <div class="guide-pill">
-            <div class="guide-pill-title">📶 Frequency (Vertical, Mel Hz)</div>
+            <div class="guide-pill-title">Frequency (Vertical, Mel Hz)</div>
             <p class="guide-pill-desc">0 – 8 kHz. Lower bands (&lt;1 kHz) show vocal pitch and vowel formants; upper bands (&gt;2.5 kHz) show friction and tension.</p>
           </div>
           <div class="guide-pill">
-            <div class="guide-pill-title">🔥 Intensity (Decibels)</div>
+            <div class="guide-pill-title">Intensity (Decibels)</div>
             <p class="guide-pill-desc">Bright yellow/orange marks peak vocal energy; dark purple/black indicates quiet baseline or silence.</p>
           </div>
         </div>
