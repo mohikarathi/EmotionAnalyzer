@@ -1,10 +1,15 @@
 # Production-grade container for EmotionAnalyzer Speech Emotion Recognition
 FROM python:3.11-slim
 
-# Set environment variables
+# Set environment variables (forcing CPU-only mode to prevent 20s CUDA probing timeouts)
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PORT=10000
+    PORT=10000 \
+    CUDA_VISIBLE_DEVICES="-1" \
+    TF_CPP_MIN_LOG_LEVEL="2" \
+    TF_NUM_INTRAOP_THREADS="2" \
+    TF_NUM_INTEROP_THREADS="1" \
+    OMP_NUM_THREADS="2"
 
 # Install system dependencies (libsndfile for soundfile, ffmpeg for decoding)
 RUN apt-get update && apt-get install -y --no-install-recommends \
